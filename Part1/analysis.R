@@ -1,3 +1,6 @@
+# Website for the an example in python kmeans 
+# http://thespread.us/clustering.html
+
 # Loading the data
 path='../Data/'
 # Active players or not
@@ -82,6 +85,12 @@ library(GGally)
 
 ggpairs(data = active_player_profile, columns = c('position1','position2','position3','shoots','weight',
                                                   'height','experience','age'))
+
+
+################################################
+# Searching for influential variables
+################################################
+# Does the position influence the salary?
 
 
 
