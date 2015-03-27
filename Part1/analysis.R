@@ -1,16 +1,18 @@
 # Website for the an example in python kmeans 
 # http://thespread.us/clustering.html
+# https://github.com/Rapporter/templates/blob/master/NBA.tpl
 library(dplyr)
+library(stats)
+library(cluster)
+library(directlabels)
+library(ggplot2)
+library(fpc)
+library(stats)
 
-<<<<<<< Updated upstream
-# Loading the data
-path='./Data/'
-=======
 ################################################
 # Building active players tables: 
 ################################################
 path='../Data/'
->>>>>>> Stashed changes
 # Active players or not
 is_active_players <- read.csv(paste(path,'active_players.csv',sep = ''))
 #1
@@ -68,9 +70,10 @@ franchise_id_team_name <- data.frame(Team=c('New York Knicks','Memphis Grizzlies
                                             'Los Angeles Clippers','Washington Wizards','Boston Celtics','Phoenix Suns','Minnesota Timberwolves',
                                             'Utah Jazz','Charlotte Hornets','Los Angeles Lakers','Sacramento Kings','Cleveland Cavaliers',
                                             'Orlando Magic','New Jersey Nets','New Orleans Hornets'),
-                                     FranchiseID=c('NYK','MEM','OKC','CHA','DEN','NOP','TOR','PHI','POR','IND','MIA','DAL','NJN','SAS',
+                                     FranchiseID=c('NYK','MEM','OKC','CHA','DEN','NOP','TOR','PHI','POR','IND','MIA','DAL','BRK','SAS',
                                                   'MIL','DET','ATL','HOU','CHI','GSW','LAC','WAS','BOS','PHO','MIN','UTA','CHA','LAL',
                                                   'SAC','CLE','ORL','NJN','NOH'))
+
 active_salaries <- subset(merge(active_salaries, franchise_id_team_name, by='Team'), select=c('PlayerID','Season','Team','FranchiseID','Salary'))
 #3
 active_per_game_final <- subset(per_game_final, PlayerID %in% active_players) #634 players
@@ -115,62 +118,81 @@ player_information <- merge(player_information_inter, active_totals_final,
                              by=c('PlayerID','FranchiseID','Season'),
                              all.x=T)
 
+# 69 players do not have matched the active_totals_final with player_information_inter
+# Issue: salary for Season 2013-14 but no totals only till 2012-13
+nrow(subset(player_information, is.na(X3P) & is.na(BLK) & is.na(ORB)))
+# Solution: suppress these lines. Get around 90% of the data. Sufficient for the clustering
+player_information <- player_information[!(is.na(player_information$X3P) &
+                                            is.na(player_information$BLK) &
+                                            is.na(player_information$ORB)),]
+# Delete duplicate variable
+player_information$Age <- NULL
+# Change NA values to 0
+player_information[,c(17:41)][is.na(player_information[,c(17:41)])] <- 0
 
+# rearrange columns in player_information
+# to have categorical (<11 column) vs numerical (>11 column) variables
+# 11 is Season, 12 is Salary. From 13 is the rest
+player_information <- player_information[c(1,2,4,5,8,9,10,13,15,16,3,14,6,7,11,12,17:41)]
 
 ################################################
-# Question 1: similar active players
+# kmeans
 ################################################
 
 # Define variables to kmeans. Which influence the salary?
-# experience
-# age
-# height
-# weight
-active_player_kmeans <- data.frame(model.matrix(playerID ~ shoots + position1, data = active_player_profile))
-active_player_kmeans$X.Intercept. <- NULL
-active_player_kmeans <- merge(subset(active_player_profile, select = c('playerID','weight','height','age','experience')), active_player_kmeans, by = 'row.names')
-active_player_kmeans$Row.names <- NULL
-active_player_kmeans <- merge(active_player_kmeans, active_salaries_final_recent, all = T,
-                              by.x = 'playerID', by.y = 'PlayerID')
-# active_player_kmeans$Salary[is.na(active_player_kmeans$Salary)] <- 0
-# active_player_kmeans$Season[is.na(active_player_kmeans$Season)] <- 0
+# Experience
+# Age
+# Height
+# Weight
+# Personnal statistics on a Season
+# With center=T and scale=T, data is normalized
+km <- kmeans(scale(player_information[,c(12:41)], center = TRUE, scale = FALSE),
+             centers = 5,
+             iter.max = 100,
+             trace=100)
+# Question b.
+# What the attributes selected to understand Salary?
+# From analysis, we can suppress redundant variables that bring nothing to the interpretation
+useless_variables <- c('FGptg','X3Pptg','X2Pptg','eFGptg','FRptg')
+player_info <- subset(player_information,
+                      select = !(names(player_information) %in% useless_variables))
 
-library(stats)
-km <- kmeans(na.omit(subset(active_player_kmeans, select = c(2:14))), iter.max = 100, centers = 10, trace = 100)
-#fitted(kmean_results)
+# kmeans with refine data
+km_info <- kmeans(scale(player_info[,c(12:37)], center = TRUE, scale = FALSE),
+             centers = 5,
+             iter.max = 100,
+             trace=100)
 
-#install.packages('fpc')
-library(fpc)
-
-d <- dist(na.omit(subset(active_player_kmeans,select=c(2:14))))
-km_verification <- data.frame(k=c(2:31),diameter=numeric(length = 30))
-for(i in 1:30){
+# Question c.
+# How many 'k' do you use?
+# Find the optimum k
+d <- dist(player_info[,c(12:37)])
+# Run the test for 30 centroids
+km_info_verif <- data.frame(k = c(2:16),
+                            diameter = numeric(length = 15))
+for(i in 1:15){
   print(i)
-  km <- kmeans(na.omit(subset(active_player_kmeans, select = c(2:14))), iter.max = 100, centers=i+1)
-  km_verification$diameter[i] <- mean(cluster.stats(d, km$cluster)$diameter)
+  set.seed(1234)
+  km_temp <- kmeans(player_info[,c(12:37)],
+                    centers = i+1,
+                    iter.max = 100,
+                    trace = 100)
+  km_info_verif$diameter[i] <- mean(fpc::cluster.stats(d, km_temp$cluster)$diameter)
 }
-plot(x=km_verification$k, y=km_verification$diameter)
+plot(x = km_info_verif$k,
+     y = km_info_verif$diameter,
+     type = 'b')
 
-install.packages('randomForest')
-library(randomForest)
-fit <- randomForest(Kyphosis ~ Age + Number + Start,   data=)
+km_final <- kmeans(scale(player_info[,c(12:37)], center = TRUE, scale = FALSE),
+                   centers = 5,
+                   iter.max = 100,
+                   trace=100)
 
-################################################
-# Cross dependence variables
-################################################
-library(GGally)
-
-ggpairs(data = active_player_profile, columns = c('position1','position2','position3','shoots','weight',
-                                                  'height','experience','age'))
-
-
-################################################
-# Searching for influential variables
-################################################
-# Does the position influence the salary?
-
-
-
+# Question d.
+# Can you get different results by using random centers? Does this affects your result?
+# Find (k, attributes) so that output is stable
+# Everything converges. Find the maximum slop in the plot: find the k.
+# Or analyze the data and find what is better to interpret
 
 
 
