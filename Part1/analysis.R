@@ -1,5 +1,5 @@
 # Loading the data
-path='../Data/'
+path='./Data/'
 # Active players or not
 is_active_players <- read.csv(paste(path,'active_players.csv',sep = ''))
 #1
