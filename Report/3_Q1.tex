@@ -3,16 +3,16 @@
 %\addcontentsline{toc}{section}{Clustering. Which players are similar? (15 points)}
 \label{subsec:3Q1}
 
-\paragraph{Introduction}Using the \texttt{stats} library in R, the purpose of this part is to determine the 'closest' players thanks to the kmeans algorithm. After defining 'closest', we will explain the approach used in order to conduct the analysis.
+\paragraph{Introduction}Using the \texttt{stats} library in R, the purpose of this part is to determine the 'closest' players thanks to the kmeans algorithm. We should not forget the main idea of the NBA analysis started in the assignment 1: \textit{explain the factors that influence the player's salary}. After defining 'closest', we will explain the approach used in order to conduct the analysis.
 
-In the context of NBA players, two players are close if their statistics (\texttt{weight}, \texttt{height}, \texttt{age}, \texttt{experience} and about the games such \texttt{wins}, \texttt{forward}, \texttt{steal}, and so on) are similar. The following aims to cluster the current NBA active players in order to understand the characteristics of the differents groups and how it influence their salary.
+In the context of NBA players, two players are close if their statistics (\texttt{weight}, \texttt{height}, \texttt{age}, \texttt{experience} and its games statistics) are similar. We aim to cluster the current NBA active players in order to understand the characteristics of the differents groups and how it influence their salary.
 
 \paragraph{Data}The first step to conduct the analysis is to build the dataset. To do that, we used the data scraped during the assignment 1 as follows:
 
 \begin{itemize}
 \item Filtering
 	\begin{enumerate}
-	\item extract the profile of the active players into the \texttt{active\_player\_profile} dataframe(attributes: \texttt{PlayerID}, \texttt{name}, \texttt{shoots}, \texttt{weight}, \texttt{height}, \texttt{dob}, \\ \texttt{birth\_city}, \texttt{birth\_state}, \texttt{experience} and \texttt{age})
+	\item extract the profile of the active players into the \texttt{active\_player\_profile} dataframe (attributes: \texttt{PlayerID}, \texttt{name}, \texttt{shoots}, \texttt{weight}, \texttt{height}, \texttt{dob}, \\ \texttt{birth\_city}, \texttt{birth\_state}, \texttt{experience} and \texttt{age})
 	\item extract the most recent salary recorded for the active players into the \texttt{active\_salaries} dataframe (attributes: \texttt{PlayerID}, \texttt{Season}, \texttt{Team},\\ \texttt{FranchiseID} and \texttt{Salary})
 	\item extract the totals statistics for the current active players into the \\ \texttt{active\_totals\_final} dataframe (attributes: \texttt{PlayerID}, \texttt{Season}, \texttt{Age},\\ \texttt{FranchiseID}, \texttt{Lg}, \texttt{Pos}, \texttt{G}, \texttt{GS}, \texttt{MP}, \texttt{FG}, \texttt{FGA}, \texttt{FG\%}, \texttt{X3P}, \texttt{X3PA}, \texttt{X3P\%}, \texttt{X2P}, \texttt{X2PA}, \texttt{X2P\%}, \texttt{eFG\%}, \texttt{FT}, \texttt{FTA}, \texttt{FT\%}, \texttt{ORB}, \texttt{DRB}, \texttt{TRB}, \texttt{AST}, \texttt{STL}, \texttt{BLK}, \texttt{TOV}, \texttt{PF} and \texttt{PTS})
 	\end{enumerate}
@@ -23,19 +23,18 @@ In the context of NBA players, two players are close if their statistics (\textt
 	\end{enumerate}
 \end{itemize}
 
-The \texttt{player\_information} dataframe contains 600 active players but at the end the kmeans algorithm is applied to only 539 active players. Indeed, the dataset is build so that for each active player we keep its last salary recorded - note that the salary of the current season can be missing - with its corresponding totals statistics for the same team and season - some players change team during the season and so have two records in salaries and teams for the same season.
+The \texttt{player\_information} dataframe contains 600 active players but at the end the kmeans algorithm is applied to only 531 active players. Indeed, the dataset is build so that for each active player we keep its last salary recorded - note that the salary of the current season can be missing - with its corresponding totals statistics for the same team and season - some players change team during the season and so have two records in salaries and teams for the same season.
 
-\paragraph{Attributes chosen to explain the player's salary}The salary is influenced directly by the \texttt{experience} of the player and by all the statisticals attributes that gather data about the player's performance (see \texttt{active\_totals\_final} for the list).
+\paragraph{Attributes chosen to explain the player's salary}The salary is influenced directly by the \texttt{experience} of the player and by all the statistical attributes that gather data about the player's performance (see \texttt{active\_totals\_final} for the list).
 
-\paragraph{kmeans algorithm}The main issue in dealing with the kmeans algorithm is the difficulty in finding the optimal number of centrois (\texttt{k}). In order to find the better parameter we use the cluster-diameter mean analysis. The figure~\ref{fig:1} below show the result for our dataset. 
+\paragraph{kmeans algorithm}The main issue in dealing with the kmeans algorithm is the difficulty in finding the optimal number of centrois (\texttt{k}). In order to find the better parameter we use the cluster-diameter mean analysis. The figure below show the result for our dataset. 
 
 \begin{figure}[h!]
 \centering
 \includegraphics[width=0.75\textwidth]{images/diameter_kmeans}
-\label{fig:1}
 \end{figure}
 
-\paragraph{}From that figure we cannot read obviously the optimal \texttt{k}. A deep analysis is done. The idea is to compute the divergence of the slope from the \texttt{k}\ts{th} to the \texttt{k+1}\ts{th}. clusters. The table below shows the results computed.\\
+\paragraph{}From that figure we cannot get directly the optimal \texttt{k} without being sure of the chosen \texttt{k}. Then, we proceed to a deeper analysis. The idea is to compute the divergence of the slope from the \texttt{k}\ts{th} to the \texttt{k+1}\ts{th} clusters. The table below shows the results computed.\\
 
 \begin{tabular}{|l|l|l|l|l|l|}
 \hline \texttt{k} & \texttt{diameter} & \texttt{slope} & \texttt{variation} (\%) & \texttt{divergence} (\%) & \texttt{diff\_div} (\%) \\ 
@@ -54,7 +53,7 @@ The \texttt{player\_information} dataframe contains 600 active players but at th
 \hline 
 \end{tabular} 
 
-\paragraph{}The \texttt{variation} is the \% of variation between the \texttt{k}\ts{th} and the \texttt{k-1}\ts{th} slopes. The \texttt{divergence} is the variance of each slope from the first one. Finally, the \texttt{diff\_div} is the variation between the \texttt{k}\ts{th} and the \texttt{k-1}\ts{th} of the \texttt{divergence}.
+\paragraph{}The \texttt{variation} is the \% of variation between the \texttt{k}\ts{th} and the \texttt{k-1}\ts{th} slopes. The \texttt{divergence} is the variance of each slope from the first one ($k=3$). Finally, the \texttt{diff\_div} is the variation between the \texttt{k}\ts{th} and the \texttt{k-1}\ts{th} of the \texttt{divergence}.
 
 \paragraph{}Theses numbers conduct us to choose $k=6$. Indeed, for that value, the slope is up to $81\%$ different from the first slope. For $k=7$, the difference is of $85.7\%$. Thus, the variance of the \texttt{divergence} start becoming insignificant (about $4.7\%$ compare to previous which are about $>12\%$).
 
@@ -90,12 +89,19 @@ The \texttt{player\_information} dataframe contains 600 active players but at th
 4  72.749964  97.986093  60.06678  14.7362017 15.70983  29.32362  188.90294
 5 121.165348 153.640452 108.44422  21.9577401 14.18470  62.22003  483.42704
 6  14.767647  19.328268   5.02169   5.1287746  1.34378   6.55704   49.28314
+
+km_final$size
+[1]  107  209  64  39  25  87
 \end{minted}
 
-\paragraph{Interpretation}By analyzing the centers coordinates, we can derive the caracteristics of the different player clusters. We can assume there are three super groups in the data: \textbf{rookies} (cluster 2), \textbf{experienced} (clusters 1 and 6) and \textbf{senior} players (clusters 3,4 and 5). The experience is the attribute that influence the most the player salary. The more experienced a player is, the higher salary he earns - senior players are above $3$ millions. At the opposite, the rookies are under $3$ millions the mean salary. Note also that the age is strongly correlated with experience. The more experienced a player is, the higher the probability to be older and finally the higher salary he earns. Let's understand deeper the variances into super groups.
+\paragraph{Interpretation}By analyzing the centers coordinates, we can derive the caracteristics of the different player clusters. We can assume the clusters are as follows: \textbf{rookies} (cluster 2), \textbf{intermediate experienced} (cluster 1), \textbf{advanced experienced} (cluster 6), \textbf{seniors 2P} (cluster 4), \textbf{seniors 3P} (cluster 3) and \textbf{all-stars} (cluster 5). The experience is the attribute that influence the most the player salary. The more experienced a player is, the higher salary he earns - senior players are above $3$ millions. At the opposite, the rookies are under $3$ millions the mean salary. Note also that the age is strongly correlated with experience. The more experienced a player is, the higher the probability to be older and finally the higher salary he earns. Let's understand deeper the differences between clusters.
 
-\subparagraph{Rookies}Since rookies have played lesser games than other players, their statistics are lower - the centroid's coordinates are all below the mean. But be careful, that doesn't mean the players are bad. It just translates a lack of experience compared to experienced and seniors.
+\subparagraph{Rookies - 209 players}Since rookies have played lesser games than other players, their statistics are lower - the centroid's coordinates are all below the mean. But be careful, that doesn't mean the players are bad. It just translates a lack of experience compared to experienced and seniors players. Players is this category can be very promising.
 
-\subparagraph{Experienced}This category design players with some experience in NBA (equals to the mean). In it there two clusters: \textbf{intermediate experienced} (cluster 1) and \textbf{advanced experienced} (cluster 6). 
+\subparagraph{Intermediate experienced - 109 players}This category corresponds to players with some experience in NBA (equals to the mean). This is by no doubt the category of the worst players since it concerns the players with experience but with statistics below the mean. One important thing is the \texttt{height} which is the lower - of $3cm$ from the mean - between the clusters. Since basket-ball uses to be a sport with tall players, we can induce that this attribute may influence the salary ($<1.7$ million). We should be aware of this result. Indeed, Tony Parker is a 'small' player but still earns more than $12.5$ million USD. This cluster groups the worst players (lower statistics).
 
-\subparagraph{Seniors}
+\subparagraph{Advanced experienced - 87 players}This category group the players with some experience in NBA (a little higher than the mean) but who do not separate from the crowd. Their statistics shows they are close to the mean - including the salary.
+
+\subparagraph{Seniors 2P and Seniors 3P - 39 and 64 players}These two categories are quite complementary. What distinguish the most these clusters are the difference in \texttt{height} of the players (about $8cm$) and the salary. That difference influence also their statistics. Indeed, seniors 2P have higher statistics in \texttt{X2P}, \texttt{X2PA}, \texttt{DRB} \texttt{TRB}, \texttt{AST}, \texttt{STL} and \texttt{TOV} than seniors 3P. Since seniors 2P are taller, we can assume they tend to be positionned under the basket, then are prone to score more $2$ points. In the opposite, seniors 3P, smaller, are prone to score more $3$ points and their position requires less defensive than seniors 2P.
+
+\subparagraph{All-stars - 25 players}This last category contains the best players of the current NBA season. As expected, they have the higher statistics in all the attributes making them the most experienced and talented NBA players. They obviously are the best paid players ($13.8$ million above the mean).
