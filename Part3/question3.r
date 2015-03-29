@@ -1,7 +1,9 @@
 library('plm')
+library('car')
 
 setwd("C:\\Users\\Simon\\Documents\\NUS courses\\Hands-On with BA\\Guided Project 2\\Part3")
 path='../Data/'
+
 
 # Load data on players
 data = read.csv(paste(path,'totals_final.csv',sep=''))
@@ -123,15 +125,74 @@ data <- data[sapply(data[,"PlayerID"],keep),]
 physical_info = subset(read.csv(paste(path,'player_profile.csv',sep = '')),select= c("PlayerID","Weight","Height"))
 data <- merge(data,physical_info)
 
+# Sort data by alphebtical order on player and by ascending season
+data <- data[order(data[,"PlayerID"], data[,"Season"]),]
+
 # Panel --------------------- Here you can add other predictors
 formula = Salary ~ Age+G+PTS+TopPerformerWinShares
 # X3P+X3PA+X2P+X2PA+PTS tous cela ne sont pas des prédicteurs
 analyse_data <- data
-analyse_data <- analyse_data[seq(0, length(analyse_data[,1]), 2),]
 fixed <- plm(formula, data = analyse_data, index=c("Season", "PlayerID"),effect = "time", model = "within")
 random <- plm(formula, data = analyse_data, index=c("Season", "PlayerID"),effect = "time", model = "random")
 phtest(fixed,random)
 summary(fixed)
+
+
+# Try predict salary from year n with data from year n-1
+shifted_data <- data
+shifted_data$Bool <- TRUE
+for(i in c(1:(length(data[,1])-1))){
+  shifted_data[i,"Salary"] <- data[i+1,"Salary"]
+  if(data[i,"PlayerID"]!=data[i+1,"PlayerID"]){
+    shifted_data[i,"Bool"] <- FALSE
+  }
+}
+shifted_data[length(data[,1]),"Bool"] <- FALSE
+shifted_data <- shifted_data[shifted_data[,"Bool"],]
+shifted_data$Bool <- NULL
+
+# Panel --------------------- Here you can add other predictors
+formula = Salary ~ Age+PTS+PF+RunnerUp+G
+# X3P+X3PA+X2P+X2PA+PTS tous cela ne sont pas des prédicteurs
+fixedS <- plm(formula, data = shifted_data, index=c("Season", "PlayerID"),effect = "time", model = "within")
+random <- plm(formula, data = shifted_data, index=c("Season", "PlayerID"),effect = "time", model = "random")
+phtestS(fixedS,randomS)
+summary(fixedS)
+
+
+
+# Try display
+# nbr_affichage <- 1
+# player_affichage <- unique(data[,'PlayerID'])[sample(c(1:202),nbr_affichage)]
+# reduced_data <- data[data[,"PlayerID"] %in% player_affichage,]
+# 
+# pdf(file='plot.pdf', width=100, height=100)
+# par(mfrow=c(10,10), mar=c(0,0,0,0))
+# yhat <- fixed$fitted
+# scatterplot(Salary ~ Season, reduced_data, groups = reduced_data$PlayerID, group.by=TRUE,boxplots=TRUE,xlab="Season",ylab="Salary",smooth=F)
+# dev.off()
+# 
+# 
+# 
+# min_salary <- min(data[,'Salary'])
+# max_salary <- max(data[,'Salary'])
+# min_season <- 2004
+# max_season <- 2014
+# 
+# 
+# n <- 10
+# player_affichage <- player_affichage[sample(1:202,n)]
+# colors <- rgb(c(seq(0, 1, 1 / 2*n), rep(1, n)), c(abs(seq(0, 1 - 1/n, 1/ n)), 1, abs(seq(1 - 1/n, 0, -1 /n))), c(rep(1, n), abs(seq(1, 0, -1 / n))))
+# plot(seq(min_season,max_season,length=10),seq(min_salary,max_salary,length = 10),col="white")
+# i <- 0
+# coef = coef
+# for(player in player_affichage){
+#   i <- i+2
+#   seasons <- data[data[,"PlayerID"]==player,"Season"]
+#   salary <- data[data[,"PlayerID"]==player,"Salary"]
+#   points(seasons,salary,col=colors[i],pch=i)
+#   
+# }
 
 # rate <- function(number){
 #   if(number < 0.001){return("***")}
