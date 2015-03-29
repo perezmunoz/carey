@@ -58,7 +58,7 @@ The \texttt{player\_information} dataframe contains 600 active players but at th
 
 \paragraph{}Theses numbers conduct us to choose $k=6$. Indeed, for that value, the slope is up to $81\%$ different from the first slope. For $k=7$, the difference is of $85.7\%$. Thus, the variance of the \texttt{divergence} start becoming insignificant (about $4.7\%$ compare to previous which are about $>12\%$).
 
-\paragraph{Cluster centroids interpretation}With $k=6$ and the previous attributes chosen, the kmeans algorithm output the same centers (it is 'stable'):
+\paragraph{Cluster centroids}With $k=6$ and the previous attributes chosen, the kmeans algorithm output the same centers (it is 'stable'). The data below shows the difference from the mean.
 
 \begin{minted}[frame=single,linenos,mathescape,fontsize=\small]{r}
 > km_final$centers
@@ -76,25 +76,26 @@ The \texttt{player\_information} dataframe contains 600 active players but at th
 4 16.5513545  370.29958  75.619731   150.50847   0.991453   4.316964
 5 24.8426365  643.31804 172.798192   359.58847  18.648889  51.924143
 6  0.6371193  148.42425  18.100721    43.48549   8.750958  22.930580
-         X2P      X2PA         FT        FTA        FTptg         ORB
-1  -5.814809 -11.95922  -7.560660  -8.029586  0.003267262   0.0530475
-2 -46.606295 -93.46792 -28.379378 -35.958352 -0.067865010 -13.8642266
-3  43.519303  88.01683  30.527395  35.792844  0.077043109  10.9232286
-4  74.628278 146.19151  36.672027  51.408228  0.016944951  25.2361292
-5 154.149303 307.66433 119.181770 148.632844  0.108676234  32.4751036
-6   9.349763  20.55491   4.330736   4.172154  0.063513475   4.5606208
-         DRB        TRB       AST         STL       BLK        TOV
-1  -4.401007  -4.347959  -3.01709  -0.8676804 -1.084077  -1.971364 
-2 -45.046135 -58.910361 -33.95444 -10.1036953 -5.925914 -19.984556
-3  42.724723  53.647952  30.13609   9.9164901  4.223458  17.470663  
-4  72.749964  97.986093  60.06678  14.7362017 15.709836  29.323627  
-5 121.165348 153.640452 108.44422  21.9577401 14.184708  62.220038  
-6  14.767647  19.328268   5.02169   5.1287746  1.343789   6.557049  
-           PF        PTS
-1   0.9898798  -28.04698
-2 -22.2423341 -154.62387
-3  23.7870468  180.88892
-4  23.0502680  188.90294
-5  32.0564218  483.42704
-6  15.1722839   49.28314
+         X2P      X2PA         FT        FTA         ORB          PF
+1  -5.814809 -11.95922  -7.560660  -8.029586   0.0530475   0.9898798
+2 -46.606295 -93.46792 -28.379378 -35.958352 -13.8642266 -22.2423341
+3  43.519303  88.01683  30.527395  35.792844  10.9232286  23.7870468
+4  74.628278 146.19151  36.672027  51.408228  25.2361292  23.0502680
+5 154.149303 307.66433 119.181770 148.632844  32.4751036  32.0564218
+6   9.349763  20.55491   4.330736   4.172154   4.5606208  15.1722839
+         DRB        TRB       AST         STL      BLK       TOV        PTS
+1  -4.401007  -4.347959  -3.01709  -0.8676804 -1.08407  -1.97136  -28.04698
+2 -45.046135 -58.910361 -33.95444 -10.1036953 -5.92591 -19.98455 -154.62387
+3  42.724723  53.647952  30.13609   9.9164901  4.22345  17.47066  180.88892
+4  72.749964  97.986093  60.06678  14.7362017 15.70983  29.32362  188.90294
+5 121.165348 153.640452 108.44422  21.9577401 14.18470  62.22003  483.42704
+6  14.767647  19.328268   5.02169   5.1287746  1.34378   6.55704   49.28314
 \end{minted}
+
+\paragraph{Interpretation}By analyzing the centers coordinates, we can derive the caracteristics of the different player clusters. We can assume there are three super groups in the data: \textbf{rookies} (cluster 2), \textbf{experienced} (clusters 1 and 6) and \textbf{senior} players (clusters 3,4 and 5). The experience is the attribute that influence the most the player salary. The more experienced a player is, the higher salary he earns - senior players are above $3$ millions. At the opposite, the rookies are under $3$ millions the mean salary. Note also that the age is strongly correlated with experience. The more experienced a player is, the higher the probability to be older and finally the higher salary he earns. Let's understand deeper the variances into super groups.
+
+\subparagraph{Rookies}Since rookies have played lesser games than other players, their statistics are lower - the centroid's coordinates are all below the mean. But be careful, that doesn't mean the players are bad. It just translates a lack of experience compared to experienced and seniors.
+
+\subparagraph{Experienced}This category design players with some experience in NBA (equals to the mean). In it there two clusters: \textbf{intermediate experienced} (cluster 1) and \textbf{advanced experienced} (cluster 6). 
+
+\subparagraph{Seniors}
