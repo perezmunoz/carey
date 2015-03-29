@@ -107,36 +107,52 @@ data[,"IsTopWS"][is.na(data[,"IsTopWS"])] <- 0
 WL_percentage <- team_stat[,c("Season","FranchiseID","WL_percentage")]
 data <- merge(data,WL_percentage)   # qui c'est qui gère le pâté en croûte ?!!!!!!!
 
+# Equilibrate the data : throw player that don't have enough record (< 8 seasons)
+keep <- function(player_id){
+  number <- length(data[data[,"PlayerID"]==player_id,1])
+  if(number<8){
+    return(FALSE)
+  } else {
+    return(TRUE)
+  }
+}
 
-# Panel
-formula = Salary ~ Age+G+MP+FG+FTA+PF+IsTopWS+WL_percentage#+FGA+FTA+ORB+DRB+AST+STL+BLK+
+data <- data[sapply(data[,"PlayerID"],keep),]
+
+# Add weight and heigth for each player
+physical_info = subset(read.csv(paste(path,'player_profile.csv',sep = '')),select= c("PlayerID","Weight","Height"))
+data <- merge(data,physical_info)
+
+# Panel --------------------- Here you can add other predictors
+formula = Salary ~ Age+G+PTS+TopPerformerWinShares
 # X3P+X3PA+X2P+X2PA+PTS tous cela ne sont pas des prédicteurs
 analyse_data <- data
 analyse_data <- analyse_data[seq(0, length(analyse_data[,1]), 2),]
-result <- plm(formula, data = analyse_data, index=c("Season", "PlayerID"),effect = "time", model = "within")
-summary(result)
- salaries[]
+fixed <- plm(formula, data = analyse_data, index=c("Season", "PlayerID"),effect = "time", model = "within")
+random <- plm(formula, data = analyse_data, index=c("Season", "PlayerID"),effect = "time", model = "random")
+phtest(fixed,random)
+summary(fixed)
 
-rate <- function(number){
-  if(number < 0.001){return("***")}
-  if(number < 0.01){return("**")}
-  if(number < 0.05){return("*")}
-  return("")
-}
-
-formulas <- c(Salary ~ Age,Salary ~ G,Salary ~ MP,Salary ~ FG,Salary ~ FTA,Salary ~ ORB,
-              Salary ~ DRB,Salary ~ AST,Salary ~ STL,Salary ~ BLK,Salary ~ TOV,
-              Salary ~ PF,Salary ~ FGA,Salary ~ FTA,Salary ~ X3P,Salary ~ X3PA,
-              Salary ~ X2P,Salary ~ X2PA,Salary ~ PTS)
-
-for(i in c(1:length(formulas))){
-  result <- plm(formulas[[i]], data = analyse_data, index=c("Season", "PlayerID"),effect = "time", model = "within")
-  result <- summary(result)
-  coefficients <- coef(result)
-  coefficients[1,"Pr(>|t|)"] <- paste(coefficients[1,"Pr(>|t|)"],rate(coefficients[1,"Pr(>|t|)"]))
-  #print(paste(coefficients,rate(coefficients[1,"Pr(>|t|)"]),"\n"))
-  print(coefficients)
-  #print(rate(coefficients[1,"Pr(>|t|)"]))
-}
-summary(result)
-sigma(result)
+# rate <- function(number){
+#   if(number < 0.001){return("***")}
+#   if(number < 0.01){return("**")}
+#   if(number < 0.05){return("*")}
+#   return("")
+# }
+# 
+# formulas <- c(Salary ~ Age,Salary ~ G,Salary ~ MP,Salary ~ FG,Salary ~ FTA,Salary ~ ORB,
+#               Salary ~ DRB,Salary ~ AST,Salary ~ STL,Salary ~ BLK,Salary ~ TOV,
+#               Salary ~ PF,Salary ~ FGA,Salary ~ FTA,Salary ~ X3P,Salary ~ X3PA,
+#               Salary ~ X2P,Salary ~ X2PA,Salary ~ PTS)
+# 
+# for(i in c(1:length(formulas))){
+#   result <- plm(formulas[[i]], data = analyse_data, index=c("Season", "PlayerID"),effect = "time", model = "within")
+#   result <- summary(result)
+#   coefficients <- coef(result)
+#   coefficients[1,"Pr(>|t|)"] <- paste(coefficients[1,"Pr(>|t|)"],rate(coefficients[1,"Pr(>|t|)"]))
+#   #print(paste(coefficients,rate(coefficients[1,"Pr(>|t|)"]),"\n"))
+#   print(coefficients)
+#   #print(rate(coefficients[1,"Pr(>|t|)"]))
+# }
+# summary(result)
+# sigma(result)
