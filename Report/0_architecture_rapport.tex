@@ -1,0 +1,46 @@
+% styles
+\include{0_architecture_rapport_styles}
+
+% begining of the document
+\begin{document}
+
+% remove pages count
+%\pagenumbering{gobble} 
+
+% presentation page
+\include{1_page_presentation}
+
+% empty page after presentation page
+\thispagestyle{empty}
+\newpage
+%\pagenumbering{arabic} \null % DELETE ?
+\thispagestyle{empty} \newpage
+
+% table of contents
+%\tableofcontents
+% add indices to subparties
+%\setcounter{tocdepth}{3}
+
+% table of figures
+%\newpage
+%\listoffigures
+%\setcounter{lofdepth}{1}
+
+% empty page after table of figures
+%\thispagestyle{empty}
+%\newpage
+%\thispagestyle{empty}
+%\null % DELETE ?
+\newpage
+
+% introduction
+%\include{2_page_introduction}
+
+% part 1 (only one part)
+\include{3_analysis}
+
+
+% conclusion
+%\include{5_conclusion}
+
+\end{document}

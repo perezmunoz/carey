@@ -180,11 +180,37 @@ for(i in 1:15){
   km_info_verif$diameter[i] <- mean(fpc::cluster.stats(d, km_temp$cluster)$diameter)
 }
 plot(x = km_info_verif$k,
-     y = km_info_verif$diameter,
-     type = 'b')
+     y = km_info_verif$diameter / 1e+07,
+     type = 'b',
+     main = 'Cluster diameter given the\nnumber of cluster',
+     xlab= 'Number of clusters (i.e. k value)',
+     ylab = 'Mean of the cluster diameter (x 1e+07)')
+
+# Find the optimal k centroids
+# We compute the slope between k and k+1
+km_info_verif$slopes <- numeric(length = 15)
+km_info_verif$variation <- numeric(length = 15)
+km_info_verif$divergence <- numeric(length = 15)
+km_info_verif$diff_div <- numeric(length = 15)
+for(i in 2:15){
+  km_info_verif$slopes[i] <- km_info_verif$diameter[i] - km_info_verif$diameter[i-1]
+  # Variation between i-1 et ith slope
+  km_info_verif$variation[i] <- (1-abs(km_info_verif$slopes[i]/km_info_verif$slopes[i-1]))*100
+  # Variation between i and 1st slope
+  km_info_verif$divergence[i] <- (1-abs(km_info_verif$slopes[i]/km_info_verif$slopes[2]))*100
+  # Difference in % of the divergence
+  km_info_verif$diff_div[i] <- km_info_verif$divergence[i] - km_info_verif$divergence[i-1]
+}
+
+# k=4,5,6,7 seems to match. To choose the better, let's see the the variation compared to
+
+# Best k seems to be k=6. Indeed, the variation compare to the 1st slope is very high and is more
+# than 10% than the previous with the 1st one. The next (k=7)  is only 5% more than the 1st, so
+# the variation start decreasing. From k=7, we can assume that the clusters are pretty stable and that
+# the diameter changes slowly
 
 km_final <- kmeans(scale(player_info[,c(12:37)], center = TRUE, scale = FALSE),
-                   centers = 5,
+                   centers = 6,
                    iter.max = 100,
                    trace=100)
 

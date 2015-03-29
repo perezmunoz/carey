@@ -1,0 +1,75 @@
+% classe du document
+% la propriété hidelinks enlève les carrés rouges des éléments clickables
+\documentclass[a4paper,hidelinks]{article}
+% marges document
+\usepackage[left=4cm,top=3cm,right=4cm,bottom=3cm]{geometry}
+
+%%%%%%%%%%%%%%%%%%%%
+% paquets utilisés %
+%%%%%%%%%%%%%%%%%%%%
+
+% windows : latin1. mac : applenew
+\usepackage[utf8]{inputenc}
+% \usepackage[french]{babel}
+% \usepackage[french]{varioref}
+\usepackage[nottoc,notlot]{tocbibind}
+\setcounter{tocdepth}{3}
+%\usepackage{fullpage}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{color}
+\usepackage{titlesec}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{subfig}
+%\usepackage{indentfirst}
+%\usepackage{tocloft} % produit erreur sur la définition de la profondeur de champ
+%\usepackage{url}
+\usepackage{hyperref}
+\usepackage{wrapfig}
+\usepackage{minted}
+\usepackage{verbatim}
+\usepackage{xcolor}
+\usepackage{tikz}
+% \usepackage[autostyle=true]{csquotes}
+\usepackage{wrapfig}
+\usepackage{pdfpages}
+\usepackage{eurosym}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% modification noms tables, listes, indexes, glossaires %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\renewcommand*\contentsname{Table des matières}
+%\renewcommand*\listfigurename{Table des figures}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% définition de nouvelles commandes %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% à la puissance
+\newcommand{\ts}{\textsuperscript}
+%intégration logo Crédit Agricole dans page de garde
+\newcommand{\logo}[5]{%
+	\begin{tikzpicture}[remember picture,overlay]%
+	\node[anchor=north east, minimum width=2.8] at ($(current page.north east)-(#1,#2)$) {%
+		\includegraphics[width=#4,height=#5]{#3}%
+	};%
+	\end{tikzpicture}%
+}%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% paramétrage des différents titres %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% définition des couleurs pour les titres
+%\definecolor{vert}{rgb}{0,0.5,0}
+%\definecolor{vertclair}{rgb}{0.85,1,0.85}
+%\definecolor{redclair}{rgb}{1,0.9,0.75}
+
+% numérotation et couleur des titres
+%\renewcommand{\thesection}{\textcolor{red}}
+%\renewcommand{\thesubsection}{\textcolor{blue}}
+%\renewcommand{\thesubsubsection}{\textcolor{vert}}
