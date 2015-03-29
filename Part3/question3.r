@@ -128,14 +128,13 @@ data <- merge(data,physical_info)
 # Sort data by alphebtical order on player and by ascending season
 data <- data[order(data[,"PlayerID"], data[,"Season"]),]
 
-# Panel --------------------- Here you can add other predictors
-formula = Salary ~ Age+G+PTS+TopPerformerWinShares
-# X3P+X3PA+X2P+X2PA+PTS tous cela ne sont pas des prédicteurs
-analyse_data <- data
-fixed <- plm(formula, data = analyse_data, index=c("Season", "PlayerID"),effect = "time", model = "within")
-random <- plm(formula, data = analyse_data, index=c("Season", "PlayerID"),effect = "time", model = "random")
-phtest(fixed,random)
+# Panel regression
+formula = Salary ~ Age+PTS+X3P+AST+TopPerformerWinShares+G
+fixed <- plm(formula, data = data, index=c("Season", "PlayerID"),effect = "time", model = "within")
 summary(fixed)
+
+random <- plm(formula, data = data, index=c("Season", "PlayerID"),effect = "time", model = "random")
+phtest(fixed,random)
 
 
 # Try predict salary from year n with data from year n-1
