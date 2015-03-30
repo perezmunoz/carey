@@ -1,4 +1,11 @@
-# Loading the data
+library(dplyr)
+library(cluster)
+library(ggplot2)
+library(stats)
+
+################################################
+# Loading the data: 
+################################################
 path='./Data/'
 #1
 player_profile <- read.csv(paste(path,'player_profile.csv',sep = ''), header=FALSE)
@@ -26,7 +33,7 @@ rownames(salaries_2011) <- NULL
 active_players_2011 <- salaries_2011$PlayerID #468
 # Subset all tables to get only active players
 #2
-player_profile_2011 <- subset(player_profile, playerID %in% active_players_2011) #634 players
+player_profile_2011 <- subset(player_profile, playerID %in% active_players_2011)
 player_profile_2011$dob <- as.Date(player_profile_2011$dob, format = '%m/%d/%y')
 player_profile_2011$dod <- NULL # players are still alive
 player_profile_2011$age <- floor(as.numeric(Sys.Date() - player_profile_2011$dob)/365)
@@ -34,9 +41,12 @@ player_profile_salaries <- merge(salaries_2011, player_profile_2011, by.x = 'Pla
 #3
 per_game_2011 <- subset(per_game_final, Season == 2011) #634 players
 per_game_salaries <- merge(salaries_2011, per_game_2011)
+# The issue is that some players change the team during the season, so their Salary changes too
+# We keep the highest salary
+per_game_salaries <- per_game_salaries %>% group_by(PlayerID) %>% filter(Salary == max(Salary)) # no duplicates
 # Remember to use playoffs_statistics 
 #4
-playoff_statistics_2011 <- subset(playoff_statistics, Year == 2011)
+playoff_statistics_2011 <- subset(playoff_statistics, Season == 2011)
 #5
 totals_2011 <- subset(totals_final, Season == 2011) #634 players
 totals_salaries <- merge(salaries_2011,totals_2011)
@@ -56,11 +66,15 @@ rm('active_players_2011')
 # Regression: 
 ################################################
 
-
-reg1 <-lm(Salary ~ PTS, data = per_game_salaries)
+reg1 <-lm(Salary ~ PTS+AST+TRB+BLK+TOV+STL, data = per_game_salaries)
 summary(reg1)
 
-reg2 <- lm(Salary ~ weight*height, data = player_profile_salaries)
-summary(reg2)
+reg1 <-lm(Salary ~ G+GS+MP, data = per_game_salaries)
+summary(reg1)
 
-ggpairs(data = per_game_salaries, columns = c('Salary','Age','Pos','G','GS','MP','FG','FGA','FG.','3P','3PA','3P.','2P','2PA','2P.','eFG.','FT','FTA','FT.','ORB','DRB','TRB','AST','STL','BLK','TOV','PF','PTS'))
+reg1 <-lm(Salary ~ X3P.*MP+X2P.*MP+FT.*MP+FG.*MP, data = per_game_salaries)
+summary(reg1)
+
+
+reg2 <- lm(Salary ~ experience, data = player_profile_salaries)
+summary(reg2)
