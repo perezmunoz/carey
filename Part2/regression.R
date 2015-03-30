@@ -57,8 +57,10 @@ rm('active_players_2011')
 ################################################
 
 
-reg1 <-lm(Salary ~ X3PA, data = per_game_salaries)
+reg1 <-lm(Salary ~ PTS, data = per_game_salaries)
 summary(reg1)
 
-reg2 <- lm(Salary ~ experience, data = player_profile_salaries)
+reg2 <- lm(Salary ~ weight*height, data = player_profile_salaries)
 summary(reg2)
+
+ggpairs(data = per_game_salaries, columns = c('Salary','Age','Pos','G','GS','MP','FG','FGA','FG.','3P','3PA','3P.','2P','2PA','2P.','eFG.','FT','FTA','FT.','ORB','DRB','TRB','AST','STL','BLK','TOV','PF','PTS'))
