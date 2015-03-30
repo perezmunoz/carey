@@ -1,6 +1,89 @@
+%!TEX root = 0_architecture_rapport.tex
+
 % subsection title
-\section*{Question 2}
-\addcontentsline{toc}{section}{Question 2}
+\section*{Linear regression models. What factors predict a player’s salary in the 2011-2012 season? (20 points)}
+\addcontentsline{toc}{section}{Linear regression models. What factors predict a player’s salary in the 2011-2012 season? (20 points)}
 \label{subsec:3Q2}
 
-toto
+\paragraph{Predictor variables}We build 3 models for the linear regression: 
+\begin{itemize}
+\item one with the usual in-game statistics: points per game \texttt{PTS}, assists per game \texttt{AST}, rebound per game \texttt{TRB}, turnovers \texttt{TOV}, blocks \texttt{BLK}, steals\texttt{STL};
+\begin{minted}[frame=single,linenos,mathescape,fontsize=\small]{r}
+lm(Salary ~ PTS+AST+TRB+BLK+TOV+STL, data = per_game_salaries)
+\end{minted}
+\end{itemize}
+\begin{itemize}
+\item one with the statistics regarding the usage of players: number of games played \texttt{G}, games started \texttt{GS}, minutes played per game \texttt{MP};
+\begin{minted}[frame=single,linenos,mathescape,fontsize=\small]{r}
+lm(Salary ~ G+GS+MP, data = per_game_salaries)
+\end{minted}
+\end{itemize}
+\begin{itemize}
+\item one with the statistics regarding the shooting accuracy of players: field goal percentage \texttt{FG\%}, 3-points-percentage \texttt{3PA\%}, free throw percentage \texttt{FT\%}, multiplied by the number of minutes played to account for the importance of players in a team.
+\begin{minted}[frame=single,linenos,mathescape,fontsize=\small]{r}
+lm(Salary ~ X3P.*MP+X2P.*MP+FT.*MP+FG.*MP, data = per_game_salaries)
+\end{minted}
+\end{itemize}
+
+\paragraph{Preditor explanation}We tried to evaluate the impact of a player on the field as, excluding off-field factors, this determines the value of a player and hence his salary. To do that, we chose variables that are commonly used to assess the performance of a player by the coaches and the players themselves as well as by the sports commentators. Let's analyse the results of the linear regression.
+
+\subparagraph{Model 1}The points, assists and rebounds per game are significant variables, which are positively correlated with the salary. There is also a significant negative offset.
+
+\begin{minted}[frame=single,linenos,mathescape,fontsize=\small]{r}
+lm(formula = Salary ~ PTS+AST+TRB+BLK+TOV+STL, data = per_game_salaries)
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  -697236     318395  -2.190  0.02899 *  
+PTS           328918      51412   6.398 3.59e-10 ***
+AST           486670     164995   2.950  0.00333 ** 
+TRB           563932     112552   5.010 7.51e-07 ***
+BLK           281477     458148   0.614  0.53924    
+TOV             6553     472058   0.014  0.98893    
+STL          -900142     528883  -1.702  0.08937 .  
+Multiple R-squared:  0.4623,	Adjusted R-squared:  0.4559 
+\end{minted}
+
+\subparagraph{Model 2}The number of games started, games played and minutes per game are all significant variables, positively correlated for the games started and minutes played and negatively for the number of games played.
+\begin{minted}[frame=single,linenos,mathescape,fontsize=\small]{r}
+lm(formula = Salary ~ G + GS + MP, data = per_game_salaries)
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  -787854     485370  -1.623  0.10516    
+G             -44112       9994  -4.414 1.24e-05 ***
+GS             30220      11165   2.707  0.00702 ** 
+MP            308776      27763  11.122  < 2e-16 ***
+Multiple R-squared:  0.4181,	Adjusted R-squared:  0.4147 
+\end{minted}
+
+\paragraph{Model 3}The field goal percentage as well as the field goal percentage times the minutes played are significant variables.
+\begin{minted}[frame=single,linenos,mathescape,fontsize=\small]{r}
+lm(formula = Salary ~ X3P. * MP + X2P. * MP + FT. * MP + FG. * 
+    MP, data = per_game_salaries)
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   7296398    3662965   1.992 0.047042 *  
+X3P.          1150100    3585118   0.321 0.748527    
+MP            -281849     203865  -1.383 0.167565    
+X2P.         17803703    9854024   1.807 0.071537 .  
+FT.          -5118364    3106271  -1.648 0.100172    
+FG.         -34587121   10796146  -3.204 0.001463 ** 
+X3P.:MP        -71879     173444  -0.414 0.678781    
+MP:X2P.      -1288671     602168  -2.140 0.032942 *  
+MP:FT.         265472     171688   1.546 0.122818    
+MP:FG.        2379415     625467   3.804 0.000164 ***
+Multiple R-squared:  0.4216,	Adjusted R-squared:  0.4089
+\end{minted}
+
+We can see that the model with the highest adjusted R-squared value is the model 1.
+
+\paragraph{Interpretation}Based on the results for each model, we can make a few interpretations. 
+First the number of points, assists and rebounds per game are the best predictors of the salaries. Teams are ready to pay higher salaries to players who can score more points, give more assists and collect more rebounds. These results were expected.
+We also see that the number of games started and minutes played are positively correlated with the salaries. Surprisingly, the number of games played is negatively correlated with the salaries. To explain this, we can say that players with very high salaries play more games and thus are more prone to injuries. Since their salaries are guaranteed, there are cases of highly-paid players who do not play in a whole season because of grave injuries such as torn ligaments in the knee.
+Using model 3, we can see that field goal percentage times minutes played is positively correlated with salary (which we expected) but that field goal percentage is negatively correlated. To interpret that, we say that role players, who typically play very few minutes and have low salaries, have a field goal percentage comparable to star players (in part because they play mostly when games are already decided and against low-class competition). You are much more valuable to your team if you can sustain a good field-goal percentage for long minutes.
+
+\paragraph{Advice from the team coach}A coach can use these results to tell its players on what area of their games they should focus on. The total salary of a player can indeed be divided between his performance in points, rebounds and assists.
+For example, 10\% of the salary of a player could be because of his points performance, 40\% because of his assists and 50\% because of its rebounds. If this player neglects his rebounding game to try to score more points, the coach could tell him to focus on the rebounds, because that is what he is paid for.
+
+\paragraph{Pertinence of the results}I think the results are valid but that the models are too simple to effectively reflect the performance of the players. For example, to obtain a finer analysis, we could have used the clusters found in question 1 and make a linear regression on each of those clusters. We could also have taken into account the position of each player.
+Here we make the linear regression on very different groups of players (stars and roles players for example) which can prove to be problematic to analyse the results.
+There are also off-field factors who influence a player salary. For example, the contract structure of the NBA limits the salaries of new players in the league, which is one of the reasons we observe a strong positive correlation between salary and experience in the league.
